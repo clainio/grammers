@@ -245,7 +245,7 @@ impl Client {
                         } else {
                             let mut i = part_index.lock().await;
                             *i += 1;
-                            (MAX_CHUNK_SIZE * (*i - 1)) as i64
+                            (MAX_CHUNK_SIZE as i64).checked_mul(*i as i64 - 1).unwrap_or(i64::MAX)
                         }
                     };
                     if offset > size {
