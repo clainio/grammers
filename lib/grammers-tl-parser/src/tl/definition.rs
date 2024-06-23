@@ -43,7 +43,7 @@ pub struct Definition {
 impl fmt::Display for Definition {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for ns in self.namespace.iter() {
-            write!(f, "{}.", ns)?;
+            write!(f, "{ns}.")?;
         }
         write!(f, "{}#{:x}", self.name, self.id)?;
 
@@ -57,11 +57,11 @@ impl fmt::Display for Definition {
         type_defs.sort_unstable();
         type_defs.dedup();
         for type_def in type_defs {
-            write!(f, " {{{}:Type}}", type_def)?;
+            write!(f, " {{{type_def}:Type}}")?;
         }
 
         for param in self.params.iter() {
-            write!(f, " {}", param)?;
+            write!(f, " {param}")?;
         }
         write!(f, " = {}", self.ty)?;
         Ok(())
@@ -344,13 +344,13 @@ mod tests {
         assert_eq!(def.name, "a");
         assert_eq!(def.id, 1);
         assert_eq!(def.params.len(), 1);
-        assert!(match def.params[0].ty {
+        assert!(matches!(
+            def.params[0].ty,
             ParameterType::Normal {
                 ty: Type { generic_ref, .. },
                 ..
-            } if generic_ref => true,
-            _ => false,
-        });
+            } if generic_ref
+        ));
         assert_eq!(
             def.ty,
             Type {

@@ -24,7 +24,6 @@
 
 use grammers_client::session::Session;
 use grammers_client::{button, reply_markup, Client, Config, InputMessage, Update};
-use log;
 use simple_logger::SimpleLogger;
 use std::env;
 use tokio::{runtime, task};
@@ -46,17 +45,17 @@ fn fib_markup(mut a: u128, mut b: u128) -> reply_markup::Inline {
         rows.push(vec![button::inline(&text, text.as_bytes())]);
 
         let bb = b;
-        b = a + b;
+        b += a;
         a = bb;
     }
 
-    let next = format!("{},{}", a, b);
+    let next = format!("{a},{b}");
     if next.len() > MAX_PAYLOAD_DATA_LEN {
         rows.push(vec![button::inline("I'm satisfied!!", b"done".to_vec())]);
     } else {
         rows.push(vec![
             button::inline("Restart!", b"0,1".to_vec()),
-            button::inline("More!", format!("{},{}", a, b).into_bytes()),
+            button::inline("More!", format!("{a},{b}").into_bytes()),
         ]);
     }
     reply_markup::inline(rows)
@@ -71,7 +70,7 @@ async fn handle_update(_client: Client, update: Update) -> Result {
         }
         Update::CallbackQuery(query) => {
             let data = std::str::from_utf8(query.data()).unwrap();
-            println!("Got callback query for {}", data);
+            println!("Got callback query for {data}");
 
             // First check special-case.
             if data == "done" {
@@ -88,7 +87,7 @@ async fn handle_update(_client: Client, update: Update) -> Result {
                 query
                     .answer()
                     .edit(
-                        InputMessage::from(format!("S{} much fibonacci 🔢", os))
+                        InputMessage::from(format!("S{os} much fibonacci 🔢"))
                             .reply_markup(&fib_markup(a, b)),
                     )
                     .await?;
@@ -112,7 +111,7 @@ async fn async_main() -> Result {
 
     let api_id = env!("TG_ID").parse().expect("TG_ID invalid");
     let api_hash = env!("TG_HASH").to_string();
-    let token = env::args().skip(1).next().expect("token missing");
+    let token = env::args().nth(1).expect("token missing");
 
     println!("Connecting to Telegram...");
     let client = Client::connect(Config {
@@ -137,7 +136,7 @@ async fn async_main() -> Result {
         task::spawn(async move {
             match handle_update(handle, update).await {
                 Ok(_) => {}
-                Err(e) => eprintln!("Error handling updates!: {}", e),
+                Err(e) => eprintln!("Error handling updates!: {e}"),
             }
         });
     }

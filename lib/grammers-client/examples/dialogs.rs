@@ -12,7 +12,6 @@
 
 use grammers_client::session::Session;
 use grammers_client::{Client, Config, SignInError};
-use log;
 use simple_logger::SimpleLogger;
 use std::env;
 use std::io::{self, BufRead as _, Write as _};
@@ -83,10 +82,7 @@ async fn async_main() -> Result<()> {
         match client.session().save_to_file(SESSION_FILE) {
             Ok(_) => {}
             Err(e) => {
-                println!(
-                    "NOTE: failed to save the session, will sign out when done: {}",
-                    e
-                );
+                println!("NOTE: failed to save the session, will sign out when done: {e}");
                 sign_out = true;
             }
         }

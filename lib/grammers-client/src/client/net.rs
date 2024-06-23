@@ -294,7 +294,7 @@ impl Client {
             }
             Err(AuthorizationError::Invoke(e)) => Err(e),
             Err(AuthorizationError::Gen(e)) => {
-                panic!("authorization key generation failed: {}", e)
+                panic!("authorization key generation failed: {e}")
             }
         }
     }
@@ -371,7 +371,7 @@ impl Connection {
         }
     }
 
-    pub(crate) async fn invoke<R: tl::RemoteCall, F: Fn(Vec<tl::enums::Updates>) -> ()>(
+    pub(crate) async fn invoke<R: tl::RemoteCall, F: Fn(Vec<tl::enums::Updates>)>(
         &self,
         request: &R,
         flood_sleep_threshold: u32,

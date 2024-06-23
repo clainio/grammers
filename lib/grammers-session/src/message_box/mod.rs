@@ -211,11 +211,11 @@ impl MessageBox {
             return;
         }
         for entry in entries {
-            if let Some(state) = self.map.get_mut(&entry) {
+            if let Some(state) = self.map.get_mut(entry) {
                 state.deadline = deadline;
                 debug!("reset deadline {:?} for {:?}", deadline, entry);
             } else {
-                panic!("did not reset deadline for {:?} as it had no entry", entry);
+                panic!("did not reset deadline for {entry:?} as it had no entry");
             }
         }
 
@@ -311,8 +311,7 @@ impl MessageBox {
             // Won't actually be able to get difference for this entry if we don't have a pts to start off from.
             if self.possible_gaps.contains_key(&entry) {
                 panic!(
-                    "Should not have a possible_gap for an entry {:?} not in the state map",
-                    entry
+                    "Should not have a possible_gap for an entry {entry:?} not in the state map"
                 );
             }
             return;
@@ -399,14 +398,7 @@ impl MessageBox {
         &mut self,
         updates: tl::enums::Updates,
         chat_hashes: &ChatHashCache,
-    ) -> Result<
-        (
-            Vec<tl::enums::Update>,
-            Vec<tl::enums::User>,
-            Vec<tl::enums::Chat>,
-        ),
-        Gap,
-    > {
+    ) -> Result<defs::UpdateAndPeers, Gap> {
         trace!("processing updates: {:?}", updates);
         // Top level, when handling received `updates` and `updatesCombined`.
         // `updatesCombined` groups all the fields we care about, which is why we use it.
@@ -625,8 +617,7 @@ impl MessageBox {
             if self.getting_diff_for.contains(&entry) {
                 if !self.map.contains_key(&entry) {
                     panic!(
-                        "Should not try to get difference for an entry {:?} without known state",
-                        entry
+                        "Should not try to get difference for an entry {entry:?} without known state"
                     );
                 }
 
@@ -654,11 +645,7 @@ impl MessageBox {
         &mut self,
         difference: tl::enums::updates::Difference,
         chat_hashes: &mut ChatHashCache,
-    ) -> (
-        Vec<tl::enums::Update>,
-        Vec<tl::enums::User>,
-        Vec<tl::enums::Chat>,
-    ) {
+    ) -> defs::UpdateAndPeers {
         trace!("applying account difference: {:?}", difference);
         let finish: bool;
         let result = match difference {
@@ -750,11 +737,7 @@ impl MessageBox {
             state: tl::enums::updates::State::State(state),
         }: tl::types::updates::Difference,
         chat_hashes: &mut ChatHashCache,
-    ) -> (
-        Vec<tl::enums::Update>,
-        Vec<tl::enums::User>,
-        Vec<tl::enums::Chat>,
-    ) {
+    ) -> defs::UpdateAndPeers {
         self.map.get_mut(&Entry::AccountWide).unwrap().pts = state.pts;
         self.map.get_mut(&Entry::SecretChats).unwrap().pts = state.qts;
         self.date = state.date;
@@ -839,8 +822,7 @@ impl MessageBox {
                 Some(gd)
             } else {
                 panic!(
-                    "Should not try to get difference for an entry {:?} without known state",
-                    entry
+                    "Should not try to get difference for an entry {entry:?} without known state"
                 );
             }
         } else {
@@ -862,11 +844,7 @@ impl MessageBox {
         request: tl::functions::updates::GetChannelDifference,
         difference: tl::enums::updates::ChannelDifference,
         chat_hashes: &mut ChatHashCache,
-    ) -> (
-        Vec<tl::enums::Update>,
-        Vec<tl::enums::User>,
-        Vec<tl::enums::Chat>,
-    ) {
+    ) -> defs::UpdateAndPeers {
         let channel_id = channel_id(&request).expect("request had wrong input channel");
         trace!(
             "applying channel difference for {}: {:?}",

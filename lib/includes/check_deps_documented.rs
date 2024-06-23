@@ -44,11 +44,8 @@ fn check_deps_documented() {
         markdown
             .lines()
             .filter_map(|line| {
-                if line.starts_with("## ") {
-                    Some(line[3..].to_string())
-                } else {
-                    None
-                }
+                line.strip_prefix("## ")
+                    .map(|stripped| stripped.to_string())
             })
             .collect::<Vec<_>>()
     };
@@ -65,12 +62,10 @@ fn check_deps_documented() {
 
     assert!(
         undocumented_deps.is_empty(),
-        "some Cargo.toml dependencies are not in DEPS.md: {:?}",
-        undocumented_deps
+        "some Cargo.toml dependencies are not in DEPS.md: {undocumented_deps:?}"
     );
     assert!(
         documented_deps.is_empty(),
-        "DEPS.md lists dependencies no longer present in Cargo.toml: {:?}",
-        documented_deps
+        "DEPS.md lists dependencies no longer present in Cargo.toml: {documented_deps:?}"
     );
 }
